@@ -1,0 +1,14 @@
+FROM rabbitmq:3-management-alpine
+
+# Define environment variables.
+ENV RABBITMQ_USER next
+ENV RABBITMQ_PASSWORD next
+ENV RABBITMQ_PID_FILE /var/lib/rabbitmq/mnesia/rabbitmq
+
+ADD init-rabbit.sh /init-rabbit.sh
+RUN chmod +x /init-rabbit.sh
+EXPOSE 15672
+EXPOSE 5672
+
+# Define default command
+CMD ["/init-rabbit.sh"]

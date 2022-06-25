@@ -1,0 +1,12 @@
+FROM node:current-alpine
+RUN      apk update && \
+         apk upgrade && \
+         apk --no-cache add \
+         git openssh openssl-dev build-base bash mc vim emacs-nox busybox-extras sudo inotify-tools
+
+WORKDIR /root
+RUN npm i ibm-graphql-query-generator graphql-request faker fs path jsonwebtoken
+#COPY test-schema.js /root/
+#COPY profile.sdl /root/
+
+

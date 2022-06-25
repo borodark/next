@@ -1,0 +1,518 @@
+version: '3.7'
+x-common_variables:
+  &services_hosts
+  TEST_HOST: 172.20.0.3
+
+  APP_META_BUTTON_SERVICE_HOST: 172.20.0.24
+  APP_META_BUTTON_SERVICE_PORT: 8080
+  APP_META_BUTTON_SERVICE_PORT_TCP: 8080
+
+  APP_META_PROFILE_SERVICE_HOST: 172.20.0.2
+  APP_META_PROFILE_SERVICE_PORT: 8080
+  APP_META_PROFILE_SERVICE_PORT_TCP: 8080
+
+
+  PLG_META_ID_DOCUMENTS_SERVICE_HOST: 172.20.0.4 #plugin 
+  PLG_META_ID_REQUISITE_SERVICE_HOST: 172.20.0.5 #plugin
+  PLG_META_ID_MEDIA_SERVICE_HOST: 172.20.0.6 #plugin 
+  PLG_META_ID_CONTACTS_SERVICE_HOST: 172.20.0.7 #plugin 
+  PLG_META_ID_FINANCE_SERVICE_HOST: 172.20.0.8 #plugin 
+  PLG_META_ID_REVIEW_SERVICE_HOST: 172.20.0.9 #plugin 
+  PLG_META_ID_REQUISITE_SERVICE_HOST: 172.20.0.10 #plugin
+  PLG_META_ID_PERSON_SERVICE_HOST: 172.20.0.11 #plugin
+
+  SVC_META_CORE_SERVICE_HOST: 172.20.0.12
+  SVC_META_ID_SERVICE_HOST: 172.20.0.13 # proxy_id
+  SVC_META_TRUST_SERVICE_HOST: 172.20.0.14
+  SVC_META_REVIEW_SERVICE_HOST: 172.20.0.15
+  SVC_META_RATINGS_SERVICE_HOST: 172.20.0.20
+  SVC_META_AUTH_SERVICE_HOST: 172.20.0.21
+  SVC_META_COUNTERS_SERVICE_HOST: 172.20.0.23
+  SVC_META_CACHE_LAYER_SERVICE_HOST: 172.20.0.27
+
+  RABBITMQ_SERVICE_HOST: 172.20.0.16
+  RABBITMQ_SERVICE_PORT: 5672
+
+  RIAK_SERVICE_HOST: 172.20.0.17
+  RIAK_SERVICE_PORT: 8087 
+
+  REDIS_SERVICE_HOST: 172.20.0.18
+  REDIS_SERVICE_PORT: 6379
+
+  ETCD_CLUSTER: 172.20.0.19:2379
+
+  CLICKHOUSE_SERVICE_CLUSTER: 172.20.0.22:8123
+  CLICKHOUSE_SERVICE_DATABASE: "reviews"
+  CLICKHOUSE_SERVICE_USERNAME: "review"
+  CLICKHOUSE_SERVICE_PASSWORD: "password"
+
+  CACHE_LAYER_DATABASE_NAME: "cache_layer"
+  CACHE_LAYER_DATABASE_USERNAME: "admin"
+  CACHE_LAYER_DATABASE_PASSWORD: "admin"
+  CACHE_LAYER_POSTGRES_SERVICE_HOST: 172.20.0.26
+  REDPANDA_SERVICE_HOST: 172.20.0.28
+
+services:
+
+  test:
+    image: demo 
+    hostname: test
+    container_name: test
+    ports:
+      - 8089:8080 # forward graffQL
+      - 4000:4000 # dev
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app/
+    volumes:
+      - ${HOME}/projects/interview:/opt/interview
+      - ${HOME}/projects/next/:/opt/app/
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker
+      - ./start-io:/opt/app/start-io
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.3
+
+  requisite:
+    image: demo
+    hostname: requisite
+    container_name: requisite
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/requisite:/opt/app 
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: ./rebuild_start_in_docker.sh
+    #command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.10
+  id:
+    image: demo
+    hostname: id
+    container_name: id
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/id:/opt/app
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: ./rebuild_start_in_docker.sh
+    #command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.13
+
+  profile:
+    image: demo
+    hostname: profile
+    container_name: profile
+    ports:
+      - 8080:8080 # forward graffQL
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/profile:/opt/app
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: ./rebuild_start_in_docker.sh
+    #command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.2
+
+  person:
+    image: demo
+    hostname: person
+    container_name: person
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/person:/opt/app 
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: ./rebuild_start_in_docker.sh
+    #command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.11
+
+  trust:
+    image: demo
+    hostname: trust
+    container_name: trust
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/trust:/opt/app
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: ./rebuild_start_in_docker.sh
+    #command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.14
+
+  core:
+    image: demo
+    hostname: core
+    container_name: core
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/core:/opt/app
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    #command: ./rebuild_start_in_docker.sh
+    command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.12
+
+  rabbit:
+    image: rabbit-next
+    hostname: rabbit
+    container_name: rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      backend:
+        ipv4_address: 172.20.0.16
+
+  riak:
+    image: riak-leveldb
+    hostname: riak
+    container_name: riak
+    ports:
+      - 8087:8087
+      - 8098:8098
+    networks:
+      backend:
+        ipv4_address: 172.20.0.17
+    volumes:
+      - riak-data:/riak-data # leveldb.data_root
+
+  redis:
+    image: redis
+    hostname: redis
+    container_name: redis
+    # command: redis-server --requirepass next
+    ports:
+      - 6379:6379
+    networks:
+      backend:
+        ipv4_address: 172.20.0.18
+  etcd:
+    hostname: etcd
+    container_name: etcd
+    image: 'bitnami/etcd:latest'
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+    ports:
+      - 2379:2379
+      - 2380:2380
+    volumes:
+      - etcd-vol:/data.etcd
+    networks:
+      backend:
+        ipv4_address: 172.20.0.19
+
+  auth:
+    image: demo
+    hostname: auth
+    container_name: auth
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/auth:/opt/app
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: ./rebuild_start_in_docker.sh
+    #command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.21
+
+  clickhouse:
+    image: yandex/clickhouse-server
+    hostname: clickhouse
+    container_name: clickhouse
+    environment:
+     - CLICKHOUSE_DB=reviews
+     - CLICKHOUSE_USER=review
+     - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+     - CLICKHOUSE_PASSWORD=password
+    volumes:
+      - ../../ratings/ddl:/root/ddl
+      - ../../ratings/var/lib/clickhouse/user_files:/var/lib/clickhouse/user_files
+      - clickhouse-data:/var/lib/clickhouse
+      - ../../ratings/etc/clickhouse-server/users.d/review.xml:/etc/clickhouse-server/users.d/review.xml
+      - ../../ratings/etc/clickhouse-server/config.d/rabbit.xml:/etc/clickhouse-server/config.d/rabbit.xml
+    ports:
+      - 8123:8123
+    ulimits:
+      nofile: 262144
+    networks:
+      backend:
+        ipv4_address: 172.20.0.22
+
+  counters:
+    image: demo
+    hostname: counters
+    container_name: counters
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/counters:/opt/app 
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: ./rebuild_start_in_docker.sh
+    #command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.23
+  button:
+    image: demo
+    hostname: button
+    container_name: button
+    ports:
+      - 8081:8080
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/button:/opt/app 
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: ./rebuild_start_in_docker.sh
+    #command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.24
+
+  keycloak:
+    #image: quay.io/keycloak/keycloak-x
+    image: quay.io/keycloak/keycloak:15.0.2
+    hostname: keycloak
+    container_name: keycloak
+    stdin_open: true
+    tty: true
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: cache_layer
+      DB_USER: admin
+      DB_PASSWORD: admin
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_LOGLEVEL: DEBUG
+    ports:
+      - 8082:8080
+    volumes:
+      - ${HOME}/projects/next/tools/kc-meta-theme/meta:/opt/jboss/keycloak/themes/meta
+      - ${HOME}/projects/next/tools/next-keycloak-spi/target/keycloak-next-spi.jar:/opt/jboss/keycloak/standalone/deployments/keycloak-next-spi.jar  
+    networks:
+      backend:
+        ipv4_address: 172.20.0.25
+ 
+  postgres:
+    image: bitnami/postgresql
+    hostname: postgres
+    container_name: postgres
+    stdin_open: true
+    tty: true
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRESQL_DATABASE: cache_layer
+    volumes:
+      - postgres_data:/bitnami/postgresql
+    networks:
+      backend:
+        ipv4_address: 172.20.0.26
+
+  cache_layer:
+    image: demo
+    hostname: cache_layer
+    container_name: cache_layer
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app
+    volumes:
+      - ${HOME}/projects/next/cache_layer:/opt/app
+      - ${HOME}/.cache:${HOME}/.cache
+      - ./rebuild_start_in_docker.sh:/opt/app/rebuild_start_in_docker.sh
+      - ./start-in-docker:/opt/app/start-in-docker:ro
+      - ./start-io:/opt/app/start-io:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      # - ${HOME}/.mix:${HOME}/.mix
+      # - ${HOME}/.hex:${HOME}/.hex
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    #command: ./rebuild_start_in_docker.sh
+    command: ./start-in-docker
+    #command: bash
+    networks:
+      backend:
+        ipv4_address: 172.20.0.27
+
+  redpanda:
+    command:
+    - redpanda
+    - start
+    - --smp
+    - '1'
+    - --reserve-memory
+    - 0M
+    - --overprovisioned
+    - --node-id
+    - '0'
+    - --kafka-addr
+    - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+    - --advertise-kafka-addr
+    - PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
+    image: docker.vectorized.io/vectorized/redpanda:latest
+    container_name: redpanda
+    hostname: redpanda
+    ports:
+    - 9092:9092
+    - 29092:29092
+    networks:
+      backend:
+        ipv4_address: 172.20.0.28
+
+networks:
+  backend:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+volumes:
+  riak-data:
+  etcd-vol:
+  clickhouse-data:
+  postgres_data:
