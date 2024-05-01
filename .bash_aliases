@@ -58,7 +58,7 @@ alias dcd='U_ID=$UID docker-compose down --remove-orphans'
 alias dps="docker ps --format '{{.Names}} <---> {{.Command}}'"
 alias dpsa='dps -a'
 
-function de() { docker exec -it "$@" bash ;}
+function de() { docker exec -it "$@" sh ;}
 alias db='docker build'
 alias da='docker attach'
 alias dcud='docker-compose up -d'
@@ -75,7 +75,9 @@ function klog-cube() { kubectl logs -f -c cube "$@" -n ccom-cubes ;}
 function klog-store() { kubectl logs -f -c cubestore "$@" -n ccom-cubes ;}
 alias pipuninstallall="pip uninstall -y -r <(pip freeze | tee pip.frozen.uninstalled)"
 alias codepolice='pre-commit run --all-files && hs-pylint-runner'
+#
 # bucket nuker copywrites here: https://github.com/aws/aws-cli/issues/3163#issuecomment-1906759163
+#
 function s3_batch_delete(){
     # This function deletes files from an S3 bucket based on a specified prefix.
     # Arguments:
@@ -95,3 +97,5 @@ function s3_batch_delete(){
     # Remove the file with keys after the files have been wiped from S3.
     rm keysToDelete-from-"${1}".txt
 } 
+
+. /usr/local/opt/asdf/libexec/asdf.sh
